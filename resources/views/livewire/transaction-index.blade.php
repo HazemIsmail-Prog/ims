@@ -1,20 +1,19 @@
 <x-slot name="header">
-    <div class=" flex items-center justify-between">
+    <div class=" flex transactions-center justify-between">
 
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('messages.items') }}
+            {{ __('messages.transactions') }}
         </h2>
-        @can('items_create')
-            <x-button x-data="{}" x-on:click="window.livewire.emitTo('item-form','showingModal',null)"
-                wire:loading.attr="disabled" class="py-0.5">{{ __('messages.add_item') }}</x-button>
-        @endcan
+        <div>
+            <x-anchor href="{{ route('stockin.index') }}">{{ __('messages.stockin') }}</x-anchor>
+            <x-anchor href="{{ route('stockout.index') }}">{{ __('messages.stockout') }}</x-anchor>
+            <x-anchor href="{{ route('transfer.index') }}">{{ __('messages.transfer') }}</x-anchor>
+        </div>
     </div>
 </x-slot>
 
 
-<div class="p-6 lg:lg-8 {{ $items->hasPages() ? 'mb-10' : '' }}">
-    @livewire('item-form')
-
+<div class="p-6 lg:lg-8 {{ $transactions->hasPages() ? 'mb-10' : '' }}">
     <div class="sm:rounded-lg">
         <div class="flex items-center justify-between py-4 bg-white dark:bg-gray-800">
             <div class="relative">
@@ -35,33 +34,25 @@
 
     {{-- small screen view --}}
     <div class=" lg:hidden">
-        @forelse ($items as $item)
+        @forelse ($transactions as $transaction)
             <div
-                class="flex mb-1 items-center gap-5 text-sm text-start text-gray-500 dark:text-gray-400 bg-white rounded-lg border p-4 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                {{-- <div class="flex items-center">
+                class="flex mb-1 transactions-center gap-5 text-sm text-start text-gray-500 dark:text-gray-400 bg-white rounded-lg border p-4 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                {{-- <div class="flex transactions-center">
                     <input id="checkbox-table-search-1" type="checkbox"
                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                     <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
                 </div> --}}
                 <div class=" flex flex-col flex-1 space-y-2 justify-start">
-                    <div>{{ $item->name }}</div>
-                    <div>{{ $item->unit }}</div>
-                    <div>
-                        <span
-                            class="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ __('messages.available') }}
-                            : {{ $item->available_quantity }}</span>
-                    </div>
-                    <div>
-                        <span
-                            class="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">{{ __('messages.deprecated') }}
-                            : {{ $item->deprecated_quantity }}</span>
-                    </div>
-                    <div>{{ $item->section_name }}</div>
+                    <div>{{ $transaction->id }}</div>
+                    <div>{{ $transaction->date->format('d-m-Y') }}</div>
+                    <div>{{ $transaction->source_store->name }}</div>
+                    <div>{{ $transaction->destination_store->name }}</div>
+                    <div>{{ $transaction->type }}</div>
                 </div>
                 <div class=" text-end">
                     <div class="flex gap-3 justify-end">
-                        @can('items_view')
-                            <button wire:click="pdf({{ $item->id }})">
+                        @can('transactions_view')
+                            <button wire:click="pdf({{ $transaction->id }})">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -71,15 +62,9 @@
                                 </svg>
                             </button>
                         @endcan
-                        @can('items_edit')
-                            <button x-data="{}"
-                                x-on:click="window.livewire.emitTo('item-form','showingModal',{{ $item->id }})">
-                                <x-svgs.edit />
-                            </button>
-                        @endcan
-                        @can('items_delete')
+                        @can('transactions_delete')
                             <button onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                wire:click="delete({{ $item }})" class="text-red-400">
+                                wire:click="delete({{ $transaction }})" class="text-red-400">
                                 <x-svgs.trash />
                             </button>
                         @endcan
@@ -88,9 +73,9 @@
             </div>
         @empty
         @endforelse
-        @if ($items->hasPages())
+        @if ($transactions->hasPages())
             <div class="absolute bottom-0 left-0 right-0 p-2 bg-white dark:bg-gray-800">
-                {{ $items->links() }}
+                {{ $transactions->links() }}
             </div>
         @endif
     </div>
@@ -101,48 +86,42 @@
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                     <th scope="col" class="p-4" width="5%">
-                        <div class="flex items-center">
+                        <div class="flex transactions-center">
                             <input id="checkbox-all-search" type="checkbox"
                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                             <label for="checkbox-all-search" class="sr-only">checkbox</label>
                         </div>
                     </th>
-                    <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.name') }}</th>
-                    <th scope="col" width="20%" class="px-6 py-3 text-center">{{ __('messages.unit') }}</th>
-                    <th scope="col" width="10%" class="px-6 py-3 text-center">{{ __('messages.available') }}</th>
-                    <th scope="col" width="10%" class="px-6 py-3 text-center">{{ __('messages.deprecated') }}
+                    <th scope="col" width="20%" class="px-6 py-3 text-start">
+                        {{ __('messages.transaction_number') }}</th>
+                    <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.date') }}</th>
+                    <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.source_store') }}
                     </th>
+                    <th scope="col" width="20%" class="px-6 py-3 text-start">
+                        {{ __('messages.destination_store') }}</th>
+                    <th scope="col" width="20%" class="px-6 py-3 text-center">{{ __('messages.type') }}</th>
                     <th scope="col" width="10%" class="px-6 py-3"></th>
                 </tr>
             </thead>
             <tbody class=" divide-y">
-                @forelse ($items as $item)
+                @forelse ($transactions as $transaction)
                     <tr class="bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td class="w-4 p-4">
-                            <div class="flex items-center">
+                            <div class="flex transactions-center">
                                 <input id="checkbox-table-search-1" type="checkbox"
                                     class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                 <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-start">{{ $item->name }}</td>
-                        <td class="px-6 py-4 text-center">{{ $item->unit }}</td>
-                        <td class="px-6 py-4 text-center">
-                            @if ($item->available_quantity > 0)
-                                <span
-                                    class="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ $item->available_quantity }}</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            @if ($item->deprecated_quantity > 0)
-                                <span
-                                    class="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">{{ $item->deprecated_quantity }}</span>
-                            @endif
-                        </td>
+                        <td class="px-6 py-4 text-start">{{ $transaction->id }}</td>
+                        <td class="px-6 py-4 text-start">{{ $transaction->date->format('d-m-Y') }}</td>
+                        <td class="px-6 py-4 text-start">{{ $transaction->source_store->name }}</td>
+                        <td class="px-6 py-4 text-start">{{ $transaction->destination_store->name }}</td>
+                        <td class="px-6 py-4 text-center">{{ $transaction->type }}</td>
                         <td class="px-6 py-4 text-end">
                             <div class="flex gap-3 justify-end">
-                                @can('items_view')
-                                    <button wire:click="pdf({{ $item->id }})">
+                                @can('transactions_view')
+                                    <button wire:click="pdf({{ $transaction->id }})">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -152,15 +131,9 @@
                                         </svg>
                                     </button>
                                 @endcan
-                                @can('items_edit')
-                                    <button x-data="{}"
-                                        x-on:click="window.livewire.emitTo('item-form','showingModal',{{ $item->id }})">
-                                        <x-svgs.edit />
-                                    </button>
-                                @endcan
-                                @can('items_delete')
+                                @can('transactions_delete')
                                     <button onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                        wire:click="delete({{ $item }})" class="text-red-400">
+                                        wire:click="delete({{ $transaction }})" class="text-red-400">
                                         <x-svgs.trash />
                                     </button>
                                 @endcan
@@ -171,9 +144,9 @@
                 @endforelse
             </tbody>
         </table>
-        @if ($items->hasPages())
+        @if ($transactions->hasPages())
             <div class="absolute bottom-0 left-0 right-0 p-2 bg-white dark:bg-gray-800">
-                {{ $items->links() }}
+                {{ $transactions->links() }}
             </div>
         @endif
     </div>

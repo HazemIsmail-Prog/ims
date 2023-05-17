@@ -43,4 +43,5 @@ class Item extends Model
         })
         ->where('item_id', $this->id)->sum('quantity');
     }
+
 }

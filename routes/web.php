@@ -5,6 +5,7 @@ use App\Http\Livewire\PermissionIndex;
 use App\Http\Livewire\RoleIndex;
 use App\Http\Livewire\StoreIndex;
 use App\Http\Livewire\TransactionForm;
+use App\Http\Livewire\TransactionIndex;
 use App\Http\Livewire\UserIndex;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -74,6 +75,7 @@ Route::group(
             Route::get('/users', UserIndex::class)->name('users.index');
             Route::get('/stores', StoreIndex::class)->name('stores.index');
             Route::get('/items', ItemIndex::class)->name('items.index');
+            Route::get('/transactions', TransactionIndex::class)->name('transactions.index');
             Route::get('/stockin', TransactionForm::class)->name('stockin.index');
             Route::get('/stockout', TransactionForm::class)->name('stockout.index');
             Route::get('/transfer', TransactionForm::class)->name('transfer.index');

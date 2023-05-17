@@ -61,7 +61,7 @@
                     class=" border rounded-lg flex flex-col justify-center items-center border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     <div class="py-2 px-4 h-28 border-b border-gray-300 dark:border-gray-700 w-full">
                         <h2 class=" py-4 font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Items
+                            {{ __('messages.items') }}
                         </h2>
                         <div class="relative ">
                             <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -109,7 +109,7 @@
                     class=" border rounded-lg flex flex-col justify-center items-center border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     <div class="py-2 px-4 h-28 border-b border-gray-300 dark:border-gray-700 w-full">
                         <h2 class=" py-4 font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Select Items
+                            {{ __('messages.selected_items') }}
                         </h2>
 
                     </div>
@@ -143,8 +143,10 @@
                     </div>
                 </div>
 
+                
+                @endif
                 <div class=" col-span-2 text-end">
-                    <x-secondary-button wire:click="" wire:loading.attr="disabled">
+                    <x-secondary-button wire:click="cancel" wire:loading.attr="disabled">
                         {{ __('messages.cancel') }}
                     </x-secondary-button>
                     <x-button class="ms-3" wire:click="save" wire:loading.attr="disabled">
@@ -153,8 +155,6 @@
 
 
                 </div>
-
-            @endif
 
         </div>
 

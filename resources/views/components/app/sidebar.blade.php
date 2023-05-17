@@ -149,59 +149,20 @@
                     </li>
                     @endcan
 
-                    <!-- Stock In -->
-                    {{-- @can('stockin_menu') --}}
+                    <!-- Transactions -->
+                    {{-- @can('transactions_menu') --}}
                     <li
-                        class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('stockin.index')) {{ 'bg-slate-900' }} @endif">
-                        <a class="block truncate transition duration-150" href="{{ route('stockin.index') }}">
+                        class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('transactions.index')) {{ 'bg-slate-900' }} @endif">
+                        <a class="block truncate transition duration-150" href="{{ route('transactions.index') }}">
                             <div
-                                class="flex items-center {{ request()->routeIs('stockin.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181" />
-                                </svg>
-                                <span class="text-sm font-medium ms-3 duration-200">{{ __('messages.stockin') }}</span>
-                            </div>
-                        </a>
-                    </li>
-                    {{-- @endcan --}}
-
-
-                    <!-- Stock Out -->
-                    {{-- @can('stockout_menu') --}}
-                    <li
-                        class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('stockout.index')) {{ 'bg-slate-900' }} @endif">
-                        <a class="block truncate transition duration-150" href="{{ route('stockout.index') }}">
-                            <div
-                                class="flex items-center {{ request()->routeIs('stockout.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                                </svg>
-                                <span
-                                    class="text-sm font-medium ms-3 duration-200">{{ __('messages.stockout') }}</span>
-                            </div>
-                        </a>
-                    </li>
-                    {{-- @endcan --}}
-
-
-                    <!-- Transfer -->
-                    {{-- @can('transfer_menu') --}}
-                    <li
-                        class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('transfer.index')) {{ 'bg-slate-900' }} @endif">
-                        <a class="block truncate transition duration-150" href="{{ route('transfer.index') }}">
-                            <div
-                                class="flex items-center {{ request()->routeIs('transfer.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
+                                class="flex items-center {{ request()->routeIs('transactions.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                                 </svg>
                                 <span
-                                    class="text-sm font-medium ms-3 duration-200">{{ __('messages.transfer') }}</span>
+                                    class="text-sm font-medium ms-3 duration-200">{{ __('messages.transactions') }}</span>
                             </div>
                         </a>
                     </li>

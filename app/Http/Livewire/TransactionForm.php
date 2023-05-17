@@ -70,30 +70,18 @@ class TransactionForm extends Component
             case 'stockout':
             case 'transfer':
 
-                $items = Item::query()
-                    ->withSum(['details as total_in' => function ($q) {
-                        $q->whereHas('transaction', function ($q) {
-                            $q->whereIn('type', ['in', 'transfer']);
-                            $q->where('destination_store_id', $this->transaction['source_store_id']);
-                        });
-                    }], 'quantity')
-
-                    ->withSum(['details as total_out' => function ($q) {
-                        $q->whereHas('transaction', function ($q) {
-                            $q->whereIn('type', ['out', 'transfer']);
-                            $q->where('source_store_id', $this->transaction['source_store_id']);
-                        });
-                    }], 'quantity')
+                $source_store = Store::find($this->transaction['source_store_id']);
+                $items = $source_store
+                    ->store_items()
                     ->when($this->search, function ($q) {
                         $q->where('name', 'like', '%' . $this->search . '%');
                     })
                     ->whereNotIn('id', collect($this->selected_items)->pluck('item_id'))
-                    ->get()->toArray();
-
-
-                $this->items = array_filter($items , function($item){
-                        return $item['total_in'] - $item['total_out'] > 0;
-                    });
+                    ->toArray();
+                    
+                $this->items = array_filter($items, function ($item) {
+                    return $item['total_in'] - $item['total_out'] > 0;
+                });
                 break;
         }
     }
@@ -156,7 +144,12 @@ class TransactionForm extends Component
 
         $transaction->details()->createMany($details_data);
 
-        dd('Done');
+        return redirect(route('transactions.index'));
+    }
+    
+    public function cancel()
+    {
+        return redirect(route('transactions.index'));
     }
 
     public function render()

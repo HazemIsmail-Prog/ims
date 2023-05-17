@@ -98,6 +98,11 @@ class PermissionSeeder extends Seeder
                 'description' => 'Stores Menu',
             ],
             [
+                'name' => 'stores_view',
+                'section_name' => 'stores',
+                'description' => 'Stores View',
+            ],
+            [
                 'name' => 'stores_create',
                 'section_name' => 'stores',
                 'description' => 'Stores Create',
@@ -122,6 +127,11 @@ class PermissionSeeder extends Seeder
                 'description' => 'Items Menu',
             ],
             [
+                'name' => 'items_view',
+                'section_name' => 'items',
+                'description' => 'Items View',
+            ],
+            [
                 'name' => 'items_create',
                 'section_name' => 'items',
                 'description' => 'Items Create',
@@ -135,6 +145,35 @@ class PermissionSeeder extends Seeder
                 'name' => 'items_delete',
                 'section_name' => 'items',
                 'description' => 'Items Delete',
+            ],
+
+
+            //transactions
+
+            [
+                'name' => 'transactions_menu',
+                'section_name' => 'transactions',
+                'description' => 'Transactions Menu',
+            ],
+            [
+                'name' => 'transactions_view',
+                'section_name' => 'transactions',
+                'description' => 'Transactions View',
+            ],
+            [
+                'name' => 'transactions_create',
+                'section_name' => 'transactions',
+                'description' => 'Transactions Create',
+            ],
+            [
+                'name' => 'transactions_edit',
+                'section_name' => 'transactions',
+                'description' => 'Transactions Edit',
+            ],
+            [
+                'name' => 'transactions_delete',
+                'section_name' => 'transactions',
+                'description' => 'Transactions Delete',
             ],
         ];
 
