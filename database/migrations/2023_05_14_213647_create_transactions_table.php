@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->foreignId('source_store_id')->constrained('stores');
-            $table->foreignId('destination_store_id')->constrained('stores');
-            $table->string('type');
+            // $table->foreignId('source_store_id')->constrained('stores');
+            // $table->foreignId('destination_store_id')->constrained('stores');
+            // $table->string('type');
             $table->text('notes')->nullable();
             $table->timestamps();
         });

@@ -2,7 +2,11 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Item;
+use App\Models\Store;
 use App\Models\Transaction;
+use App\Models\TransactionDetail;
+use App\Services\TransactionsServices;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -14,72 +18,60 @@ class TransactionIndex extends Component
 
     protected $listeners = ['TransactionsDataChanged' => '$refresh'];
 
-    public $search;
+    public $items;
+    public $stores;
+    public $item_id;
+    public $store_id;
     public $pagination = 9;
 
-    public function updatingSearch()
+    public function mount()
     {
-        $this->resetPage();
+        $this->items = Item::whereHas('details')->get();
+        $this->stores = Store::get();
+        $this->item_id = '';
     }
-
-
-
-
-
-
-
-
-
-
-
 
     public function pdf($transaction_id)
     {
-        $transaction = Transaction::where('id',$transaction_id)->with('details.item')->first();
-        $view = view('pdf.transaction',compact('transaction'));
+        $transaction = Transaction::query()
+            ->where('id', $transaction_id)
+            ->with('details.item')
+            ->with('details.source_store')
+            ->with('details.destination_store')
+            ->first();
+        $view = view('pdf.transaction', compact('transaction'));
         $html = $view->render();
         Pdf::loadHTML($html)->save(public_path() . '/transaction.pdf');
         $this->redirect(asset('') . 'transaction.pdf');
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public function delete($transaction)
     {
         $current_transaction = Transaction::find($transaction['id']);
         $current_transaction->details()->delete();
         $current_transaction->delete();
+        (new TransactionsServices())->syncItemStoreTable();
         $this->emit('TransactionsDataChanged');
     }
     public function render()
     {
         return view('livewire.transaction-index', [
-            'transactions' => Transaction::when($this->search, function ($q) {
-                $q->where('id', $this->search );
-            })
-            ->with(['source_store','destination_store'])
-            ->paginate($this->pagination),
+            'transaction_details' => TransactionDetail::query()
+                ->when($this->item_id, function ($q) {
+                    $q->where('item_id', $this->item_id);
+                })
+                ->when($this->store_id, function ($q) {
+                    $q->where(function ($q) {
+                        $q->where('source_store_id', $this->store_id);
+                        $q->orWhere('destination_store_id', $this->store_id);
+                    });
+                })
+                ->with('transaction')
+                ->with('item')
+                ->with('source_store')
+                ->with('destination_store')
+                ->orderBy('id', 'desc')
+                ->paginate($this->pagination),
         ]);
     }
 }

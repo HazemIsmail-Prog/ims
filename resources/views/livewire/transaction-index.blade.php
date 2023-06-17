@@ -4,19 +4,20 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('messages.transactions') }}
         </h2>
-        <div>
-            <x-anchor href="{{ route('stockin.index') }}">{{ __('messages.stockin') }}</x-anchor>
-            <x-anchor href="{{ route('stockout.index') }}">{{ __('messages.stockout') }}</x-anchor>
-            <x-anchor href="{{ route('transfer.index') }}">{{ __('messages.transfer') }}</x-anchor>
-        </div>
+        @can('transactions_create')
+            <x-button x-data="{}" x-on:click="window.livewire.emitTo('transaction-form','showingModal',null)"
+                wire:loading.attr="disabled" class="py-0.5">{{ __('messages.add_transaction') }}</x-button>
+        @endcan
     </div>
 </x-slot>
 
 
-<div class="p-6 lg:lg-8 {{ $transactions->hasPages() ? 'mb-10' : '' }}">
+<div class="p-6 lg:lg-8 {{ $transaction_details->hasPages() ? 'mb-10' : '' }}">
+    @livewire('transaction-form')
+
     <div class="sm:rounded-lg">
-        <div class="flex items-center justify-between py-4 bg-white dark:bg-gray-800">
-            <div class="relative">
+        <div class="flex items-center gap-2 py-4 bg-white dark:bg-gray-800">
+            {{-- <div class="relative">
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                     <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden="true" fill="currentColor"
                         viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -28,31 +29,38 @@
                 <input wire:model="search" type="text" id="table-search-items"
                     class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="{{ __('messages.search') }}">
-            </div>
+            </div> --}}
+
+            <select wire:model="item_id"
+                class="h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                <option value="">{{ __('messages.all_items') }}</option>
+                @foreach ($items as $item)
+                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                @endforeach
+            </select>
+            <select wire:model="store_id"
+                class="h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                <option value="">{{ __('messages.all_stores') }}</option>
+                @foreach ($stores as $store)
+                    <option value="{{ $store->id }}">{{ $store->name }}</option>
+                @endforeach
+            </select>
         </div>
     </div>
 
     {{-- small screen view --}}
-    <div class=" lg:hidden">
-        @forelse ($transactions as $transaction)
+    {{-- <div class=" lg:hidden">
+        @forelse ($transaction_details as $transaction)
             <div
                 class="flex mb-1 transactions-center gap-5 text-sm text-start text-gray-500 dark:text-gray-400 bg-white rounded-lg border p-4 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                {{-- <div class="flex transactions-center">
-                    <input id="checkbox-table-search-1" type="checkbox"
-                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
-                </div> --}}
                 <div class=" flex flex-col flex-1 space-y-2 justify-start">
-                    <div>{{ $transaction->id }}</div>
-                    <div>{{ $transaction->date->format('d-m-Y') }}</div>
-                    <div>{{ $transaction->source_store->name }}</div>
-                    <div>{{ $transaction->destination_store->name }}</div>
-                    <div>{{ $transaction->type }}</div>
+                    <div>{{ $transaction->transaction->id }}</div>
+                    <div>{{ $transaction->transaction->date->format('d-m-Y') }}</div>
                 </div>
                 <div class=" text-end">
                     <div class="flex gap-3 justify-end">
                         @can('transactions_view')
-                            <button wire:click="pdf({{ $transaction->id }})">
+                            <button wire:click="pdf({{ $transaction->transaction->id }})">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -73,55 +81,64 @@
             </div>
         @empty
         @endforelse
-        @if ($transactions->hasPages())
+        @if ($transaction_details->hasPages())
             <div class="absolute bottom-0 left-0 right-0 p-2 bg-white dark:bg-gray-800">
                 {{ $transactions->links() }}
             </div>
         @endif
-    </div>
+    </div> --}}
 
     {{-- large screen view --}}
     <div class="hidden lg:block overflow-x-auto">
         <table class="w-full text-sm text-start text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                    <th scope="col" class="p-4" width="5%">
-                        <div class="flex transactions-center">
-                            <input id="checkbox-all-search" type="checkbox"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                            <label for="checkbox-all-search" class="sr-only">checkbox</label>
-                        </div>
-                    </th>
-                    <th scope="col" width="20%" class="px-6 py-3 text-start">
+                    <th scope="col" width="20%" class="px-6 py-3 text-center">
                         {{ __('messages.transaction_number') }}</th>
                     <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.date') }}</th>
+                    <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.item') }}</th>
+                    <th scope="col" width="20%" class="px-6 py-3 text-center">{{ __('messages.quantity') }}</th>
                     <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.source_store') }}
                     </th>
                     <th scope="col" width="20%" class="px-6 py-3 text-start">
                         {{ __('messages.destination_store') }}</th>
-                    <th scope="col" width="20%" class="px-6 py-3 text-center">{{ __('messages.type') }}</th>
                     <th scope="col" width="10%" class="px-6 py-3"></th>
                 </tr>
             </thead>
             <tbody class=" divide-y">
-                @forelse ($transactions as $transaction)
+                @forelse ($transaction_details as $row)
                     <tr class="bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="w-4 p-4">
-                            <div class="flex transactions-center">
-                                <input id="checkbox-table-search-1" type="checkbox"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
-                            </div>
+                        <td class="px-6 py-4 text-center">{{ $row->transaction->id }}</td>
+                        <td class="px-6 py-4 text-start">{{ $row->transaction->date->format('d-m-Y') }}</td>
+                        <td class="px-6 py-4 text-start">
+                            @if ($item_id == $row->item_id)
+                                <span
+                                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ $row->item->name }}</span>
+                            @else
+                                {{ $row->item->name }}
+                            @endif
                         </td>
-                        <td class="px-6 py-4 text-start">{{ $transaction->id }}</td>
-                        <td class="px-6 py-4 text-start">{{ $transaction->date->format('d-m-Y') }}</td>
-                        <td class="px-6 py-4 text-start">{{ $transaction->source_store->name }}</td>
-                        <td class="px-6 py-4 text-start">{{ $transaction->destination_store->name }}</td>
-                        <td class="px-6 py-4 text-center">{{ $transaction->type }}</td>
+                        <td class="px-6 py-4 text-center">{{ $row->quantity }}</td>
+                        <td class="px-6 py-4 text-start" nowrap>
+                            @if ($store_id == $row->source_store_id)
+                                <span
+                                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ $row->source_store->name }}</span>
+                            @else
+                                {{ $row->source_store->name }}
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-start" nowrap>
+                            @if ($store_id == $row->destination_store_id)
+                                <span
+                                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ $row->destination_store->name }}</span>
+                            @else
+                                {{ $row->destination_store->name }}
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-end">
                             <div class="flex gap-3 justify-end">
                                 @can('transactions_view')
-                                    <button wire:click="pdf({{ $transaction->id }})">
+                                    <button wire:click="pdf({{ $row->transaction->id }})">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -131,9 +148,15 @@
                                         </svg>
                                     </button>
                                 @endcan
+                                @can('transactions_edit')
+                                    <button x-data="{}"
+                                        x-on:click="window.livewire.emitTo('transaction-form','showingModal',{{ $row->transaction_id }})">
+                                        <x-svgs.edit />
+                                    </button>
+                                @endcan
                                 @can('transactions_delete')
                                     <button onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                        wire:click="delete({{ $transaction }})" class="text-red-400">
+                                        wire:click="delete({{ $row->transaction }})" class="text-red-400">
                                         <x-svgs.trash />
                                     </button>
                                 @endcan
@@ -144,9 +167,9 @@
                 @endforelse
             </tbody>
         </table>
-        @if ($transactions->hasPages())
+        @if ($transaction_details->hasPages())
             <div class="absolute bottom-0 left-0 right-0 p-2 bg-white dark:bg-gray-800">
-                {{ $transactions->links() }}
+                {{ $transaction_details->links() }}
             </div>
         @endif
     </div>

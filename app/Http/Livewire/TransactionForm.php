@@ -5,155 +5,209 @@ namespace App\Http\Livewire;
 use App\Models\Item;
 use App\Models\Store;
 use App\Models\Transaction;
+use App\Services\TransactionsServices;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
 use Livewire\Component;
 
 class TransactionForm extends Component
 {
+    protected $listeners = [
+        'showingModal' => 'showingModal',
+    ];
 
-    public string $pageTitle;
-    public $route;
-    public $source_stores;
-    public $destination_stores;
-    public $transaction;
+
+    public $modalTitle;
+    public $showModal = false;
+    public $date;
+    public $notes;
     public $items = [];
-    public $selected_items = [];
-    public $search = '';
+    public $rows = [];
+    public $transaction;
 
-
-    public function mount()
+    public function showingModal($transaction_id)
     {
-        $this->route = explode('.',  request()->route()->getName())[0];
-        $this->pageTitle = __('messages.add_' . $this->route);
-        $this->transaction['date'] = date('Y-m-d');
-        $this->transaction['source_store_id'] = '';
-        $this->transaction['destination_store_id'] = '';
-        switch ($this->route) {
-            case 'stockin':
-                $this->source_stores = Store::whereIn('type', ['supplier', 'adjustment'])->get();
-                $this->destination_stores = Store::where('type', 'store')->get();
-                break;
-            case 'stockout':
-                $this->source_stores = Store::where('type', 'store')->get();
-                $this->destination_stores = Store::whereIn('type', ['depreciation', 'adjustment'])->get();
-                break;
-            case 'transfer':
-                $this->source_stores = Store::where('type', 'store')->get();
-                break;
+        $this->reset();
+        $this->resetValidation();
+        if ($transaction_id) {
+            $this->modalTitle =  __('messages.edit_transaction');
+            $this->transaction = Transaction::find($transaction_id);
+            $this->date = $this->transaction->date->format('Y-m-d');
+            $this->notes = $this->transaction->notes;
+            foreach ($this->transaction->details as $index => $row) {
+                $this->rows[$index]['source_stores'] = Store::query()
+                    ->where('id', '!=', 1) // id 1 for depretiation
+                    ->whereHas('items')
+                    ->orWhere('type', 'supplier')
+                    ->orWhere('type', 'adjustment')
+                    ->get();
+                $this->rows[$index]['source_store_id'] = $row->source_store_id;
+                $this->updatedRows($row->source_store_id,$index. '.source_store_id');
+                $this->rows[$index]['destination_store_id'] = $row->destination_store_id;
+                $this->rows[$index]['item_id'] = $row->item_id;
+                $this->updatedRows($row->item_id,$index. '.item_id');
+                $this->rows[$index]['available'] = $this->rows[$index]['available'] + $row->quantity;
+                $this->rows[$index]['quantity'] = $row->quantity;
+            }
+        } else {
+            $this->modalTitle = __('messages.add_transaction');
+            $this->date = date('Y-m-d');
+            $this->add_row();
         }
+        $this->showModal = true;
     }
 
-    public function updatedTransaction($val, $key)
+    public function add_row()
     {
-        if ($key == 'source_store_id' && $this->route == 'transfer') {
-            $this->transaction['destination_store_id'] = '';
-            $this->destination_stores = Store::where('type', 'store')->where('id', '!=', $val)->get();
-        }
-
-        $this->selected_items = [];
-        $this->getItems();
-    }
-
-    public function getItems()
-    {
-        switch ($this->route) {
-            case 'stockin':
-
-                $this->items = Item::query()
-                    ->when($this->search, function ($q) {
-                        $q->where('name', 'like', '%' . $this->search . '%');
-                    })
-                    ->whereNotIn('id', collect($this->selected_items)->pluck('item_id'))
-                    ->get()->toArray();
-                break;
-
-
-            case 'stockout':
-            case 'transfer':
-
-                $source_store = Store::find($this->transaction['source_store_id']);
-                $items = $source_store
-                    ->store_items()
-                    ->when($this->search, function ($q) {
-                        $q->where('name', 'like', '%' . $this->search . '%');
-                    })
-                    ->whereNotIn('id', collect($this->selected_items)->pluck('item_id'))
-                    ->toArray();
-                    
-                $this->items = array_filter($items, function ($item) {
-                    return $item['total_in'] - $item['total_out'] > 0;
-                });
-                break;
-        }
-    }
-
-    public function updatedSearch()
-    {
-        $this->getItems();
-    }
-
-    public function unset_item($index)
-    {
-        unset($this->selected_items[$index]);
-        $this->selected_items = array_values($this->selected_items);
-        $this->getItems();
-    }
-
-    public function add_to_selected_items($index)
-    {
-        $this->selected_items[] = [
-            'item_id' => $this->items[$index]['id'],
-            'item_name' => $this->items[$index]['name'],
-            'item_unit' => $this->items[$index]['unit'],
-            'total_in' => $this->items[$index]['total_in'] ?? 0,
-            'total_out' => $this->items[$index]['total_out'] ?? 0,
+        $this->rows[] = [
+            'source_stores' => Store::query()
+                ->where('id', '!=', 1) // id 1 for depretiation
+                ->whereHas('items')
+                ->orWhere('type', 'supplier')
+                ->orWhere('type', 'adjustment')
+                ->get(),
+            'source_store_type' => '',
+            'destination_stores' => [],
+            'source_store_id' => '',
+            'destination_store_id' => '',
+            'items' => [],
+            'item_id' => '',
+            'available' => 0,
             'quantity' => 0,
         ];
-        // dd($this->selected_items);
-        $this->getItems();
+    }
+
+    public function updatedRows($val, $key)
+    {
+        $index = explode('.', $key)[0];
+        $model = explode('.', $key)[1];
+        if ($model == 'source_store_id') {
+            $selected_source_store = Store::find($val);
+            $this->rows[$index]['source_store_type'] = $selected_source_store->type;
+            switch ($selected_source_store->type) {
+                case 'supplier':
+                    $this->rows[$index]['destination_stores'] = Store::where('id', '!=', $selected_source_store->id)->whereIn('type', ['store'])->get();
+                    break;
+                case 'store':
+                    $this->rows[$index]['destination_stores'] = Store::where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation'])->get();
+                    break;
+                case 'adjustment':
+                    $this->rows[$index]['destination_stores'] = Store::where('id', '!=', $selected_source_store->id)->whereIn('type', ['store'])->get();
+                    break;
+            }
+            $this->rows[$index]['destination_store_id'] = '';
+            $this->rows[$index]['items'] =
+                Item::query()
+                ->when($selected_source_store->type == 'store', function ($q) use ($selected_source_store) {
+                    $q->whereHas('stores', function ($q) use ($selected_source_store) {
+                        $q->where('store_id', $selected_source_store->id);
+                    });
+                })
+                ->get();
+            $this->rows[$index]['item_id'] = '';
+            $this->rows[$index]['available'] = 0;
+            $this->rows[$index]['quantity'] = 0;
+        }
+
+        if ($model == 'item_id') {
+            $this->rows[$index]['available'] = Item::find($val)->availablePerStore($this->rows[$index]['source_store_id']);
+        }
+    }
+    protected $rules = [
+        'rows' => 'required',
+        'rows.*.source_store_id' => ['required'],
+        'rows.*.destination_store_id' => 'required',
+    ];
+
+
+    public function unset_row($index)
+    {
+        unset($this->rows[$index]);
+        $this->rows = array_values($this->rows);
+    }
+
+    public function validateDuplicatedRows()
+    {
+        $this->resetErrorBag();
+        $new_list = $this->rows;
+        foreach ($new_list as $index => $row) {
+            $new_list[$index]['index'] = $index;
+        }
+
+        $duplicates = collect($new_list)->groupBy(function ($item) {
+            return $item['source_store_id'] . '-' . $item['destination_store_id'] . '-' . $item['item_id'];
+        })->filter(function ($group) {
+            return $group->count() > 1;
+        })->flatMap(function ($group) {
+            return $group->pluck('index');
+        });
+
+        if ($duplicates->count() > 0) {
+            foreach ($duplicates as $index) {
+                // $this->addError('rows.' . $index . '.duplicated', 'rows.' . $index . '.duplicated');
+                throw ValidationException::withMessages(['rows.' . $index . '.duplicated' => 'Merge duplicate entry in one line']);
+            }
+        }
+    }
+
+    public function duplicate_row($index)
+    {
+        $this->rows[] = $this->rows[$index];
     }
 
     public function save()
     {
-        switch ($this->route) {
-            case 'stockin':
-                $type = 'in';
-                break;
-            case 'stockout':
-                $type = 'out';
-                break;
-            case 'transfer':
-                $type = 'transfer';
-                break;
-        }
+        $this->validateDuplicatedRows();
+        // if ($this->getErrorBag()->count() > 0) {
+        //     return false;
+        // }
+        $this->validate();
         $data = [
-            'date' => $this->transaction['date'],
-            'source_store_id' => $this->transaction['source_store_id'],
-            'destination_store_id' => $this->transaction['destination_store_id'],
-            'type' => $type,
-            'notes' => $this->transaction['notes'] ?? null,
+            'date' => $this->date,
+            'notes' => $this->notes ?? null,
         ];
-        $transaction = Transaction::create($data);
 
         $details_data = [];
-        foreach ($this->selected_items as $row) {
+        foreach ($this->rows as $row) {
             $details_data[] = [
+                'source_store_id' => $row['source_store_id'],
+                'destination_store_id' => $row['destination_store_id'],
                 'item_id' => $row['item_id'],
                 'quantity' => $row['quantity'],
             ];
         }
 
-        $transaction->details()->createMany($details_data);
-
-        return redirect(route('transactions.index'));
-    }
-    
-    public function cancel()
-    {
-        return redirect(route('transactions.index'));
-    }
-
-    public function render()
-    {
-        return view('livewire.transaction-form');
+        if(!$this->transaction){
+            //create
+            DB::beginTransaction();
+            try {
+                $transaction = Transaction::create($data);
+                $transaction->details()->createMany($details_data);
+                (new TransactionsServices())->syncItemStoreTable();
+                $this->showModal = false;
+                $this->emit('TransactionsDataChanged');
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollback();
+                $this->addError('quantity_error', $e->getMessage());
+            }
+        }else{
+            //edit
+            DB::beginTransaction();
+            try {
+                $this->transaction ->update($data);
+                $this->transaction->details()->delete();
+                $this->transaction->details()->createMany($details_data);
+                (new TransactionsServices())->syncItemStoreTable();
+                $this->showModal = false;
+                $this->emit('TransactionsDataChanged');
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollback();
+                $this->addError('quantity_error', $e->getMessage());
+            }
+        }
+        
     }
 }

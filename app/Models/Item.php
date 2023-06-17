@@ -21,27 +21,24 @@ class Item extends Model
         return $this->hasMany(TransactionDetail::class);
     }
 
-    public function getAvailableQuantityAttribute()
+    public function stores()
     {
-        $inQuantity = $this->details()->whereHas('transaction',function($q){
-            $q->where('type', 'in');
-        })
-        ->where('item_id', $this->id)->sum('quantity');
-        $outQuantity = $this->details()->whereHas('transaction',function($q){
-            $q->where('type', 'out');
-        })
-        ->where('item_id', $this->id)->sum('quantity');
-
-        return $inQuantity - $outQuantity;
+        return $this->belongsToMany(Store::class)->withPivot('quantity');;
     }
 
+    public function getAvailableQuantityAttribute()
+    {
+        return $this->stores()->whereNotIn('store_id',[1,2])->sum('quantity'); // 1 for Depreciation Store ID and 2 for Adjustment Store ID
+    }
+
+    public function availablePerStore($store_id)
+    {
+        return $this->stores()->where('store_id',$store_id)->sum('quantity');
+    }
+    
     public function getDeprecatedQuantityAttribute()
     {
-        return $this->details()->whereHas('transaction',function($q){
-            $q->where('type', 'out');
-            $q->where('destination_store_id', 1); // 1 for Depreciation Store ID
-        })
-        ->where('item_id', $this->id)->sum('quantity');
+        return $this->stores()->where('store_id',1)->sum('quantity'); // 1 for Depreciation Store ID
     }
 
 }

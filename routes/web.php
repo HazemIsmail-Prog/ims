@@ -76,9 +76,6 @@ Route::group(
             Route::get('/stores', StoreIndex::class)->name('stores.index');
             Route::get('/items', ItemIndex::class)->name('items.index');
             Route::get('/transactions', TransactionIndex::class)->name('transactions.index');
-            Route::get('/stockin', TransactionForm::class)->name('stockin.index');
-            Route::get('/stockout', TransactionForm::class)->name('stockout.index');
-            Route::get('/transfer', TransactionForm::class)->name('transfer.index');
         });
 
 

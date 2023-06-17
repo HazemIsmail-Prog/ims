@@ -24,14 +24,8 @@ class StoreIndex extends Component
 
     public function pdf($store_id)
     {
-        $store = Store::where('id', $store_id)->first();
-        $items = $store->store_items()->toArray();
-        $items = array_filter($items, function ($item) {
-            return $item['total_in'] - $item['total_out'] > 0;
-        });
-
-        // dd($items);
-        $view = view('pdf.store', compact('store','items'));
+        $store = Store::where('id', $store_id)->with('items')->first();
+        $view = view('pdf.store', compact('store'));
         $html = $view->render();
         Pdf::loadHTML($html)->save(public_path() . '/store.pdf');
         $this->redirect(asset('') . 'store.pdf');
@@ -42,8 +36,6 @@ class StoreIndex extends Component
         Store::find($store['id'])->delete();
         $this->emit('StoresDataChanged');
     }
-
-
 
     public function render()
     {

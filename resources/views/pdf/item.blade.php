@@ -82,10 +82,10 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($stores as $row)
+            @foreach ($item->stores->where('type','store') as $row)
                 <tr>
-                    <td class="td text-start">{{ $row['store_name'] }}</td>
-                    <td class="td text-center">{{ $row['available'] }}</td>
+                    <td class="td text-start">{{ $row->name }}</td>
+                    <td class="td text-center">{{ $row->pivot->quantity }}</td>
                 </tr>
             @endforeach
         </tbody>

@@ -12,27 +12,8 @@ class Store extends Model
     
     protected $guarded = [];
 
-    public function details()
+    public function items()
     {
-        return $this->hasManyThrough(TransactionDetail::class,Transaction::class,'destination_store_id');
-    }
-
-    public function store_items()
-    {
-        return Item::query()
-            ->withSum(['details as total_in' => function ($q) {
-                $q->whereHas('transaction', function ($q) {
-                    $q->whereIn('type', ['in', 'transfer']);
-                    $q->where('destination_store_id', $this->id);
-                });
-            }], 'quantity')
-
-            ->withSum(['details as total_out' => function ($q) {
-                $q->whereHas('transaction', function ($q) {
-                    $q->whereIn('type', ['out', 'transfer']);
-                    $q->where('source_store_id', $this->id);
-                });
-            }], 'quantity')
-            ->get();
+        return $this->belongsToMany(Item::class)->withPivot('quantity');
     }
 }

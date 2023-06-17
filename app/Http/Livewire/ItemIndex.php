@@ -25,22 +25,8 @@ class ItemIndex extends Component
 
     public function pdf($item_id)
     {
-        $item = Item::where('id', $item_id)->first();
-        $all_stores = Store::all();
-        $stores = [];
-        foreach($all_stores as $store){
-            $items = $store->store_items()->where('id',$item->id)->toArray();
-            $items = array_filter($items, function ($item) {
-                return $item['total_in'] - $item['total_out'] > 0;
-            });
-            if($items){
-                $stores[] = [
-                    'store_name' => $store->name,
-                    'available' => array_values($items)[0]['total_in'] - array_values($items)[0]['total_out'],
-                ];
-            }
-        }
-        $view = view('pdf.item', compact('item','stores'));
+        $item = Item::where('id', $item_id)->with('stores')->first();
+        $view = view('pdf.item', compact('item'));
         $html = $view->render();
         Pdf::loadHTML($html)->save(public_path() . '/item.pdf');
         $this->redirect(asset('') . 'item.pdf');

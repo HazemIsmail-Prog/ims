@@ -97,11 +97,11 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($items as $row)
+            @foreach ($store->items as $row)
                 <tr>
                     <td class="td text-start">{{ $row['name'] }}</td>
                     <td class="td text-center">{{ $row['unit'] }}</td>
-                    <td class="td text-center">{{ $row['total_in'] - $row['total_out'] }}</td>
+                    <td class="td text-center">{{ $row->pivot->quantity }}</td>
                 </tr>
             @endforeach
         </tbody>

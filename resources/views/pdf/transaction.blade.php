@@ -67,18 +67,6 @@
                 <td>Date</td>
                 <td><strong>: {{ $transaction->date->format('d-m-Y') }}</strong></td>
             </tr>
-            <tr>
-                <td>Type</td>
-                <td><strong>: {{ $transaction->type }}</strong></td>
-            </tr>
-            <tr>
-                <td>From</td>
-                <td><strong>: {{ $transaction->source_store->name }}</strong></td>
-            </tr>
-            <tr>
-                <td>To</td>
-                <td><strong> : {{ $transaction->destination_store->name }}</strong></td>
-            </tr>
             @if ($transaction->notes)
                 <tr>
                     <td>Notes</td>
@@ -94,6 +82,8 @@
                 <th class="th text-start">Item</th>
                 <th class="th text-center">Unit</th>
                 <th class="th text-center">Quantity</th>
+                <th class="th text-center">Source</th>
+                <th class="th text-center">Destination</th>
             </tr>
         </thead>
         <tbody>
@@ -102,6 +92,8 @@
                     <td class="td text-start">{{ $row->item->name }}</td>
                     <td class="td text-center">{{ $row->item->unit }}</td>
                     <td class="td text-center">{{ $row->quantity }}</td>
+                    <td class="td text-center">{{ $row->source_store->name }}</td>
+                    <td class="td text-center">{{ $row->destination_store->name }}</td>
                 </tr>
             @endforeach
         </tbody>
