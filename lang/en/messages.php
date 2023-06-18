@@ -79,6 +79,7 @@ return [
     'all_items' => 'All Items',
     'all_stores' => 'All Stores',
     'add_row' => 'Add Row',
+    'edit_transaction' => 'Edit Transaction',
     '' => '',
     '' => '',
     '' => '',

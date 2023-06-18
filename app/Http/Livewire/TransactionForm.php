@@ -17,11 +17,12 @@ class TransactionForm extends Component
         'showingModal' => 'showingModal',
     ];
 
-
     public $modalTitle;
     public $showModal = false;
     public $date;
     public $notes;
+    public $stores;
+    public $source_stores;
     public $items = [];
     public $rows = [];
     public $transaction;
@@ -30,27 +31,30 @@ class TransactionForm extends Component
     {
         $this->reset();
         $this->resetValidation();
+        //get all Stores in one query
+        $this->stores = Store::with('items')->get();
+        $this->source_stores = $this->stores
+            ->where('id', '!=', 1) // id 1 for depretiation
+            ->filter(fn ($store) => $store->items->count() > 0 || $store->type == 'supplier' || $store->type == 'adjustment');
         if ($transaction_id) {
+            //Edit
             $this->modalTitle =  __('messages.edit_transaction');
-            $this->transaction = Transaction::find($transaction_id);
+            $this->transaction = Transaction::with('details')->find($transaction_id);
             $this->date = $this->transaction->date->format('Y-m-d');
             $this->notes = $this->transaction->notes;
+
             foreach ($this->transaction->details as $index => $row) {
-                $this->rows[$index]['source_stores'] = Store::query()
-                    ->where('id', '!=', 1) // id 1 for depretiation
-                    ->whereHas('items')
-                    ->orWhere('type', 'supplier')
-                    ->orWhere('type', 'adjustment')
-                    ->get();
+                $this->rows[$index]['source_stores'] = $this->source_stores;
                 $this->rows[$index]['source_store_id'] = $row->source_store_id;
-                $this->updatedRows($row->source_store_id,$index. '.source_store_id');
+                $this->updatedRows($row->source_store_id, $index . '.source_store_id');
                 $this->rows[$index]['destination_store_id'] = $row->destination_store_id;
                 $this->rows[$index]['item_id'] = $row->item_id;
-                $this->updatedRows($row->item_id,$index. '.item_id');
+                $this->updatedRows($row->item_id, $index . '.item_id');
                 $this->rows[$index]['available'] = $this->rows[$index]['available'] + $row->quantity;
                 $this->rows[$index]['quantity'] = $row->quantity;
             }
         } else {
+            //Create
             $this->modalTitle = __('messages.add_transaction');
             $this->date = date('Y-m-d');
             $this->add_row();
@@ -61,12 +65,7 @@ class TransactionForm extends Component
     public function add_row()
     {
         $this->rows[] = [
-            'source_stores' => Store::query()
-                ->where('id', '!=', 1) // id 1 for depretiation
-                ->whereHas('items')
-                ->orWhere('type', 'supplier')
-                ->orWhere('type', 'adjustment')
-                ->get(),
+            'source_stores' => $this->source_stores,
             'source_store_type' => '',
             'destination_stores' => [],
             'source_store_id' => '',
@@ -83,17 +82,15 @@ class TransactionForm extends Component
         $index = explode('.', $key)[0];
         $model = explode('.', $key)[1];
         if ($model == 'source_store_id') {
-            $selected_source_store = Store::find($val);
+            $selected_source_store = $this->stores->where('id', $val)->first();
             $this->rows[$index]['source_store_type'] = $selected_source_store->type;
             switch ($selected_source_store->type) {
                 case 'supplier':
-                    $this->rows[$index]['destination_stores'] = Store::where('id', '!=', $selected_source_store->id)->whereIn('type', ['store'])->get();
+                case 'adjustment':
+                    $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store']);
                     break;
                 case 'store':
-                    $this->rows[$index]['destination_stores'] = Store::where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation'])->get();
-                    break;
-                case 'adjustment':
-                    $this->rows[$index]['destination_stores'] = Store::where('id', '!=', $selected_source_store->id)->whereIn('type', ['store'])->get();
+                    $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation']);
                     break;
             }
             $this->rows[$index]['destination_store_id'] = '';
@@ -110,7 +107,7 @@ class TransactionForm extends Component
             $this->rows[$index]['quantity'] = 0;
         }
 
-        if ($model == 'item_id') {
+        if ($model == 'item_id' && $this->rows[$index]['source_store_type'] == 'store') {
             $this->rows[$index]['available'] = Item::find($val)->availablePerStore($this->rows[$index]['source_store_id']);
         }
     }
@@ -178,7 +175,7 @@ class TransactionForm extends Component
             ];
         }
 
-        if(!$this->transaction){
+        if (!$this->transaction) {
             //create
             DB::beginTransaction();
             try {
@@ -192,11 +189,11 @@ class TransactionForm extends Component
                 DB::rollback();
                 $this->addError('quantity_error', $e->getMessage());
             }
-        }else{
+        } else {
             //edit
             DB::beginTransaction();
             try {
-                $this->transaction ->update($data);
+                $this->transaction->update($data);
                 $this->transaction->details()->delete();
                 $this->transaction->details()->createMany($details_data);
                 (new TransactionsServices())->syncItemStoreTable();
@@ -208,6 +205,5 @@ class TransactionForm extends Component
                 $this->addError('quantity_error', $e->getMessage());
             }
         }
-        
     }
 }

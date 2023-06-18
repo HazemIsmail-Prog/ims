@@ -15,6 +15,7 @@
 <div class="p-6 lg:lg-8 {{ $items->hasPages() ? 'mb-10' : '' }}">
     @livewire('item-form')
 
+
     <div class="sm:rounded-lg">
         <div class="flex items-center justify-between py-4 bg-white dark:bg-gray-800">
             <div class="relative">
@@ -38,11 +39,6 @@
         @forelse ($items as $item)
             <div
                 class="flex mb-1 items-center gap-5 text-sm text-start text-gray-500 dark:text-gray-400 bg-white rounded-lg border p-4 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                {{-- <div class="flex items-center">
-                    <input id="checkbox-table-search-1" type="checkbox"
-                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
-                </div> --}}
                 <div class=" flex flex-col flex-1 space-y-2 justify-start">
                     <div>{{ $item->name }}</div>
                     <div>{{ $item->unit }}</div>

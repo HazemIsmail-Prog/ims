@@ -47,8 +47,7 @@ class TransactionIndex extends Component
 
     public function delete($transaction)
     {
-        $current_transaction = Transaction::find($transaction['id']);
-        $current_transaction->details()->delete();
+        $current_transaction = TransactionDetail::find($transaction['id']);
         $current_transaction->delete();
         (new TransactionsServices())->syncItemStoreTable();
         $this->emit('TransactionsDataChanged');
