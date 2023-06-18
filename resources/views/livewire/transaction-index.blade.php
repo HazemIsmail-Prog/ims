@@ -16,6 +16,10 @@
     @livewire('transaction-form')
     @livewire('transaction-detail-form')
 
+    @foreach ($errors->all() as $error)
+        <div class=" text-red-500">{{ $error }}</div>
+    @endforeach
+
     <div class="sm:rounded-lg">
         <div class="flex flex-col lg:flex-row lg:w-1/2 items-start gap-2 py-4 bg-white dark:bg-gray-800">
             <select wire:model="item_id"

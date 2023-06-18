@@ -10,7 +10,7 @@ use App\Services\TransactionsServices;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Illuminate\Support\Facades\DB;
 
 class TransactionIndex extends Component
 {
@@ -47,10 +47,18 @@ class TransactionIndex extends Component
 
     public function delete($transaction)
     {
-        $current_transaction = TransactionDetail::find($transaction['id']);
-        $current_transaction->delete();
-        (new TransactionsServices())->syncItemStoreTable();
-        $this->emit('TransactionsDataChanged');
+
+        DB::beginTransaction();
+        try {
+            $current_transaction = TransactionDetail::find($transaction['id']);
+            $current_transaction->delete();
+            (new TransactionsServices())->syncItemStoreTable();
+            $this->emit('TransactionsDataChanged');
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            $this->addError('quantity_error', $e->getMessage());
+        }
     }
     public function render()
     {
