@@ -163,6 +163,7 @@ class TransactionForm extends Component
         $data = [
             'date' => $this->date,
             'notes' => $this->notes ?? null,
+            'user_id' => auth()->id(),
         ];
 
         $details_data = [];
