@@ -109,7 +109,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="5" class=" text-center p-2">
+                                <td colspan="6" class=" text-center p-2">
                                     <button class=" text-green-500" type="button"
                                         wire:click="add_row">{{ __('messages.add_row') }}</button>
                                 </td>
