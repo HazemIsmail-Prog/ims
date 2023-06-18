@@ -107,8 +107,6 @@
         <table class="w-full text-sm text-start text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                    <th scope="col" width="20%" class="px-6 py-3 text-center">
-                        {{ __('messages.transaction_number') }}</th>
                     <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.date') }}</th>
                     <th scope="col" width="20%" class="px-6 py-3 text-start">{{ __('messages.source_store') }}
                     <th scope="col" width="20%" class="px-6 py-3 text-center">{{ __('messages.quantity') }}</th>
@@ -122,7 +120,6 @@
             <tbody class=" divide-y">
                 @forelse ($transaction_details as $row)
                     <tr class="bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-4 text-center">{{ $row->transaction->id }}</td>
                         <td class="px-6 py-4 text-start">{{ $row->transaction->date->format('d-m-Y') }}</td>
                         <td class="px-6 py-4 text-start" nowrap>
                             @if ($store_id == $row->source_store_id)

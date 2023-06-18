@@ -23,8 +23,8 @@
                         <tbody class=" divide-y">
                             <tr
                                 class="bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                <td class=" align-top" width="25%">
-                                    <select required
+                                <td class=" align-top w-60">
+                                    <select required style="min-width: 15rem;"
                                         class="mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                         wire:model="row.source_store_id">
                                         <option disabled value="">---</option>
@@ -33,8 +33,8 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td class=" align-top" width="25%">
-                                    <select required
+                                <td class=" align-top w-60">
+                                    <select required style="min-width: 15rem;"
                                         class="mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                         wire:model="row.destination_store_id">
                                         <option disabled value="">---</option>
@@ -43,8 +43,8 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td class=" align-top" width="25%">
-                                    <select required
+                                <td class=" align-top w-60" width="25%">
+                                    <select required style="min-width: 15rem;"
                                         class="mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                         wire:model="row.item_id">
                                         <option disabled value="">---</option>
@@ -58,8 +58,8 @@
                                     @endif
 
                                 </td>
-                                <td class=" align-top" width="15%">
-                                    <input required wire:model="row.quantity" type="number"
+                                <td class=" align-top w-32">
+                                    <input required style="min-width: 8rem;" wire:model="row.quantity" type="number"
                                         min="1"
                                         @if ($row['source_store_type'] == 'store') max="{{ $row['available'] }}" @endif
                                         class=" mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"

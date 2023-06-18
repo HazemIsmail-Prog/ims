@@ -51,10 +51,14 @@ class TransactionIndex extends Component
         DB::beginTransaction();
         try {
             $current_transaction = TransactionDetail::find($transaction['id']);
+            $current_parent_transaction = $current_transaction->transaction;
             $current_transaction->delete();
             (new TransactionsServices())->syncItemStoreTable();
             $this->emit('TransactionsDataChanged');
             DB::commit();
+            if($current_parent_transaction->details->count()== 0){
+                $current_parent_transaction->delete();
+            }
         } catch (\Exception $e) {
             DB::rollback();
             $this->addError('quantity_error', $e->getMessage());
