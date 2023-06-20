@@ -16,4 +16,9 @@ class Store extends Model
     {
         return $this->belongsToMany(Item::class)->withPivot('quantity');
     }
+
+    public function availablePerItem($item_id)
+    {
+        return $this->items()->where('item_id', $item_id)->sum('quantity');
+    }
 }

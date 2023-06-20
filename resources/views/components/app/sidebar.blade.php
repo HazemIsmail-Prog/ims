@@ -133,40 +133,88 @@
 
                     <!-- Items -->
                     @can('items_menu')
-                    <li
-                        class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('items.index')) {{ 'bg-slate-900' }} @endif">
-                        <a class="block truncate transition duration-150" href="{{ route('items.index') }}">
-                            <div
-                                class="flex items-center {{ request()->routeIs('items.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5" />
-                                </svg>
-                                <span class="text-sm font-medium ms-3 duration-200">{{ __('messages.items') }}</span>
-                            </div>
-                        </a>
-                    </li>
+                        <li
+                            class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('items.index')) {{ 'bg-slate-900' }} @endif">
+                            <a class="block truncate transition duration-150" href="{{ route('items.index') }}">
+                                <div
+                                    class="flex items-center {{ request()->routeIs('items.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5" />
+                                    </svg>
+                                    <span class="text-sm font-medium ms-3 duration-200">{{ __('messages.items') }}</span>
+                                </div>
+                            </a>
+                        </li>
                     @endcan
 
                     <!-- Transactions -->
-                    {{-- @can('transactions_menu') --}}
-                    <li
-                        class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('transactions.index')) {{ 'bg-slate-900' }} @endif">
-                        <a class="block truncate transition duration-150" href="{{ route('transactions.index') }}">
-                            <div
-                                class="flex items-center {{ request()->routeIs('transactions.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                                </svg>
-                                <span
-                                    class="text-sm font-medium ms-3 duration-200">{{ __('messages.transactions') }}</span>
-                            </div>
-                        </a>
-                    </li>
-                    {{-- @endcan --}}
+                    @can('transactions_menu')
+                        <li
+                            class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (request()->routeIs('transactions.index')) {{ 'bg-slate-900' }} @endif">
+                            <a class="block truncate transition duration-150" href="{{ route('transactions.index') }}">
+                                <div
+                                    class="flex items-center {{ request()->routeIs('transactions.index') ? 'text-indigo-500' : 'text-slate-400 hover:text-white' }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                    </svg>
+                                    <span
+                                        class="text-sm font-medium ms-3 duration-200">{{ __('messages.transactions') }}</span>
+                                </div>
+                            </a>
+                        </li>
+                    @endcan
+
+
+                    @canany(['items_report_menu', 'stores_report_menu'])
+                        <!-- Setting -->
+                        <li class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 @if (in_array(Route::current()->getName(), ['items.report', 'stores.report'])) {{ 'bg-slate-900' }} @endif"
+                            x-data="{ open: {{ in_array(Route::current()->getName(), ['items.report', 'stores.report']) ? 1 : 0 }} }">
+                            <a class="block text-slate-400 hover:text-white truncate transition duration-150 @if (in_array(Route::current()->getName(), ['items.report', 'stores.report'])) {{ 'hover:text-slate-200' }} @endif"
+                                href="#0" @click.prevent="sidebarExpanded ? open = !open : sidebarExpanded = true">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <x-svgs.report />
+                                        <span
+                                            class="text-sm font-medium ms-3 duration-200">{{ __('messages.reports') }}</span>
+                                    </div>
+                                    <x-svgs.chevron />
+                                </div>
+                            </a>
+                            <ul class="ps-9 mt-1 @if (!in_array(Route::current()->getName(), ['items_report_menu', 'stores_report_menu'])) {{ 'hidden' }} @endif"
+                                :class="open ? '!block' : 'hidden'">
+
+
+
+                                @can('items_report_menu')
+                                    <li class="mb-1 last:mb-0">
+                                        <a class="block text-slate-400 hover:text-slate-200 transition duration-150 truncate @if (request()->routeIs('items.report')) {{ '!text-indigo-500' }} @endif"
+                                            href="{{ route('items.report') }}">
+                                            <span class="text-sm font-medium duration-200">{{ __('messages.items_report') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+
+
+
+                                @can('stores_report_menu')
+                                    <li class="mb-1 last:mb-0">
+                                        <a class="block text-slate-400 hover:text-slate-200 transition duration-150 truncate @if (request()->routeIs('stores.report')) {{ '!text-indigo-500' }} @endif"
+                                            href="{{ route('stores.report') }}">
+                                            <span
+                                                class="text-sm font-medium duration-200">{{ __('messages.stores_report') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+
+
+
+                            </ul>
+                        </li>
+                    @endcanany
 
 
                 </ul>

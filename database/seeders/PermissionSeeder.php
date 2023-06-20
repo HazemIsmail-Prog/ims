@@ -22,6 +22,19 @@ class PermissionSeeder extends Seeder
                 'description' => 'Dashboard Menu',
             ],
 
+            // Reports
+            [
+                'name' => 'items_report_menu',
+                'section_name' => 'reports',
+                'description' => 'Items Report',
+            ],
+
+            [
+                'name' => 'stores_report_menu',
+                'section_name' => 'reports',
+                'description' => 'Stores Report',
+            ],
+
             //roles
             [
                 'name' => 'roles_menu',

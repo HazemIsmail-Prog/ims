@@ -11,14 +11,12 @@
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
 
-    <!-- Styles -->
-    
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
 
-<body class="{{ app()->getLocale() == 'ar' ? 'font-messiri' : ' font-Nunito' }}  antialiased h-screen overflow-hidden"
+<body class="{{ app()->getLocale() == 'ar' ? 'font-messiri' : ' font-Nunito' }}  antialiased h-screen print:overflow-visible overflow-y-auto"
     :class="{ 'sidebar-expanded': sidebarExpanded }" x-data="{ sidebarOpen: false, sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' }" x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))">
     <x-banner />
     <!-- Page wrapper -->
@@ -26,20 +24,22 @@
         <x-app.sidebar />
         <!-- Content area -->
         <div class="flex flex-col flex-1 h-screen relative">
-            @livewire('navigation-menu')
+            <div class=" print:hidden">
+                @livewire('navigation-menu')
+            </div>
             <!-- Page Heading -->
             @if (isset($header))
-            <header class="bg-white dark:bg-gray-800 shadow">
-                <div class="max-w-full mx-auto p-3 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
+                <header style="height: 58px;" class=" bg-white dark:bg-gray-800 shadow print:shadow-none">
+                    <div class="max-w-full mx-auto p-3 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
             @endif
             <!-- Page Content -->
-            <main class=" overflow-y-auto ">
+            <main class=" print:overflow-visible overflow-y-auto">
                 <div class="py-6 ">
                     <div class="max-w-full mx-auto sm:px-6 lg:px-6 ">
-                        <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg">
+                        <div style="height: calc(100vh - 151px);" class="print:overflow-visible overflow-y-auto bg-white dark:bg-gray-800 print:shadow-none shadow-xl sm:rounded-lg">
                             {{ $slot }}
                         </div>
                     </div>
@@ -48,6 +48,8 @@
         </div>
     </div>
     @stack('modals')
+    @stack('scripts')
+
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Livewire\ItemIndex;
+use App\Http\Livewire\ItemsReport;
 use App\Http\Livewire\PermissionIndex;
 use App\Http\Livewire\RoleIndex;
 use App\Http\Livewire\StoreIndex;
+use App\Http\Livewire\StoresReport;
 use App\Http\Livewire\TransactionForm;
 use App\Http\Livewire\TransactionIndex;
 use App\Http\Livewire\UserIndex;
@@ -76,6 +78,8 @@ Route::group(
             Route::get('/stores', StoreIndex::class)->name('stores.index');
             Route::get('/items', ItemIndex::class)->name('items.index');
             Route::get('/transactions', TransactionIndex::class)->name('transactions.index');
+            Route::get('/items-report', ItemsReport::class)->name('items.report');
+            Route::get('/stores-report', StoresReport::class)->name('stores.report');
         });
 
 
