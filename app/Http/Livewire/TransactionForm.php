@@ -92,27 +92,27 @@ class TransactionForm extends Component
             $this->rows[$index]['source_store_type'] = $selected_source_store->type;
             switch ($selected_source_store->type) {
                 case 'supplier':
-                    case 'adjustment':
-                        $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store']);
-                        break;
-                        case 'store':
-                            $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation']);
+                case 'adjustment':
+                    $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store']);
                     break;
-                }
-                $this->rows[$index]['destination_store_id'] = '';
-                $this->rows[$index]['items'] =
+                case 'store':
+                    $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation']);
+                    break;
+            }
+            $this->rows[$index]['destination_store_id'] = '';
+            $this->rows[$index]['items'] =
                 Item::query()
                 ->when($selected_source_store->type == 'store', function ($q) use ($selected_source_store) {
                     $q->whereHas('stores', function ($q) use ($selected_source_store) {
                         $q->where('store_id', $selected_source_store->id);
                     });
                 })
-                ->get();
-                $this->rows[$index]['item_id'] = '';
-                $this->rows[$index]['available'] = 0;
-                $this->rows[$index]['quantity'] = 0;
+                ->get()->toArray();
+            $this->rows[$index]['item_id'] = '';
+            $this->rows[$index]['available'] = 0;
+            $this->rows[$index]['quantity'] = 0;
         }
-        
+
         if ($model == 'item_id' && $this->rows[$index]['source_store_type'] == 'store') {
             $this->rows[$index]['available'] = Item::find($val)->availablePerStore($this->rows[$index]['source_store_id']);
         }

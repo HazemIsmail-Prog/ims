@@ -12,8 +12,8 @@ class Item extends Model
     protected $guarded = [];
 
     protected $appends = [
-        'available_quantity',
-        'deprecated_quantity',
+        // 'available_quantity',
+        // 'deprecated_quantity',
     ];
 
     public function details()
