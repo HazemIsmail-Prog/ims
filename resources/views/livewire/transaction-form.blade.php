@@ -23,7 +23,7 @@
                 @foreach ($errors->all() as $error)
                     <div class=" text-red-500">{{ $error }}</div>
                 @endforeach
-                <div class=" col-span-full lg:block overflow-x-auto">
+                <div class=" col-span-full lg:block overflow-x-auto pb-52">
                     <table class="w-full text-sm text-start text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
@@ -38,7 +38,7 @@
                         <tbody class=" divide-y">
                             @foreach ($rows as $index => $row)
                                 <tr
-                                    class="bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    class="bg-white dark:bg-gray-800 dark:border-gray-700">
                                     <td class=" align-middle text-center">
                                         @error('rows.' . $index . '.duplicated')
                                             <span class=" text-xs text-red-500">Dup</span>
@@ -65,19 +65,18 @@
                                         </select>
                                     </td>
                                     <td class=" align-top w-60">
-                                        <select required style="min-width: 15rem;"
-                                            class="mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                            wire:model="rows.{{ $index }}.item_id">
-                                            <option disabled value="">---</option>
-                                            @foreach ($row['items'] as $item)
-                                                <option value="{{ $item['id'] }}">{{ $item['name'] }}</option>
-                                            @endforeach
-                                        </select>
+                                        <div style="min-width: 15rem;">
+                                            <livewire:single-searchable-select 
+                                                key="{{ now().$index }}"
+                                                :list="$row['items']" 
+                                                :index="$index" 
+                                                :selected_id="$rows[$index]['item_id']"
+                                            />
+                                        </div>
                                         @if ($rows[$index]['item_id'] && $rows[$index]['source_store_type'] == 'store')
                                             <div class=" text-green-500 text-xs">{{ $rows[$index]['available'] }}
                                                 {{ __('messages.available') }}</div>
                                         @endif
-
                                     </td>
                                     <td class=" align-top w-32">
                                         <input style="min-width: 8rem;" required

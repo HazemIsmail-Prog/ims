@@ -15,6 +15,7 @@ class TransactionForm extends Component
 {
     protected $listeners = [
         'showingModal' => 'showingModal',
+        'item_selected' => 'item_selected',
     ];
 
     public $modalTitle;
@@ -62,6 +63,11 @@ class TransactionForm extends Component
         $this->showModal = true;
     }
 
+    public function item_selected($id,$index){
+        $this->rows[$index]['item_id'] = $id;
+        $this->updatedRows($id,$index.'.item_id');
+    }
+
     public function add_row()
     {
         $this->rows[] = [
@@ -86,15 +92,15 @@ class TransactionForm extends Component
             $this->rows[$index]['source_store_type'] = $selected_source_store->type;
             switch ($selected_source_store->type) {
                 case 'supplier':
-                case 'adjustment':
-                    $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store']);
+                    case 'adjustment':
+                        $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store']);
+                        break;
+                        case 'store':
+                            $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation']);
                     break;
-                case 'store':
-                    $this->rows[$index]['destination_stores'] = $this->stores->where('id', '!=', $selected_source_store->id)->whereIn('type', ['store', 'adjustment', 'depreciation']);
-                    break;
-            }
-            $this->rows[$index]['destination_store_id'] = '';
-            $this->rows[$index]['items'] =
+                }
+                $this->rows[$index]['destination_store_id'] = '';
+                $this->rows[$index]['items'] =
                 Item::query()
                 ->when($selected_source_store->type == 'store', function ($q) use ($selected_source_store) {
                     $q->whereHas('stores', function ($q) use ($selected_source_store) {
@@ -102,11 +108,11 @@ class TransactionForm extends Component
                     });
                 })
                 ->get();
-            $this->rows[$index]['item_id'] = '';
-            $this->rows[$index]['available'] = 0;
-            $this->rows[$index]['quantity'] = 0;
+                $this->rows[$index]['item_id'] = '';
+                $this->rows[$index]['available'] = 0;
+                $this->rows[$index]['quantity'] = 0;
         }
-
+        
         if ($model == 'item_id' && $this->rows[$index]['source_store_type'] == 'store') {
             $this->rows[$index]['available'] = Item::find($val)->availablePerStore($this->rows[$index]['source_store_id']);
         }
