@@ -57,7 +57,7 @@
                                     <td class=" align-top w-60">
                                         <select required style="min-width: 15rem;"
                                             class="mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                            wire:model="rows.{{ $index }}.destination_store_id">
+                                            wire:model.defer="rows.{{ $index }}.destination_store_id">
                                             <option disabled value="">---</option>
                                             @foreach ($row['destination_stores'] as $store)
                                                 <option value="{{ $store['id'] }}">{{ $store['name'] }}</option>
@@ -80,7 +80,7 @@
                                     </td>
                                     <td class=" align-top w-32">
                                         <input style="min-width: 8rem;" required
-                                            wire:model="rows.{{ $index }}.quantity" type="number"
+                                            wire:model.defer="rows.{{ $index }}.quantity" type="number"
                                             min="1"
                                             @if ($rows[$index]['source_store_type'] == 'store') max="{{ $rows[$index]['available'] }}" @endif
                                             class=" mt-1 w-full h-10 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
