@@ -5,10 +5,12 @@
     <div x-data="multiselect({
         items: {{ @json_encode($list_items) }},
         size: 6,
+        'selected_items_ids': @entangle($model),
     })" x-init="onInit" @focusout="handleBlur" class="relative">
         <!-- Start Item Tags And Input Field -->
         <div
             class="flex items-center justify-between px-1 border rounded-md relative pr-8 bg-white dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700">
+            <input type="hidden" x-model="selected_items_ids">
             <ul class="flex flex-col items-center w-full">
                 <!-- Search Input -->
                 <input x-ref="searchInput" x-model="search" @click="expanded = true" @focusin="expanded = true"
@@ -20,9 +22,9 @@
                 <div class=" w-full overflow-y-hidden overflow-x-auto">
                     <div class="flex">
                         <template x-for="(selectedItem, idx) in selectedItems">
-                            <button type="button" x-text="shortenedName(selectedItem.name, maxTagChars)" @click="removeElementByIdx(idx)"
-                                @keyup.backspace="removeElementByIdx(idx)" @keyup.delete="removeElementByIdx(idx)"
-                                tabindex="0"
+                            <button type="button" x-text="shortenedName(selectedItem.name, maxTagChars)"
+                                @click="removeElementByIdx(idx)" @keyup.backspace="removeElementByIdx(idx)"
+                                @keyup.delete="removeElementByIdx(idx)" tabindex="0"
                                 class=" text-xs min-h-min min-w-max m-1 px-2 py-1.5 border-indigo-500 dark:text-indigo-800 bg-indigo-200 border rounded-md cursor-pointer after:content-['x'] after:ml-1.5 after:text-indigo-500 outline-none focus:outline-none ring-0 focus:ring-2 focus:ring-indigo-500 ring-inset transition-all">
                             </button>
                         </template>
@@ -51,8 +53,7 @@
                     <template x-for="(filteredItem, idx) in filteredItems">
                         <li x-text="shortenedName(filteredItem.name, maxItemChars)"
                             @click="handleItemClick(filteredItem)" :class="idx === activeIndex && 'bg-amber-200'"
-                            :title="filteredItem.name"
-                            style="user-select: none;"
+                            :title="filteredItem.name" style="user-select: none;"
                             class="hover:bg-indigo-200 dark:hover:bg-gray-600 cursor-pointer px-2 py-2"></li>
                     </template>
                 </template>
@@ -75,6 +76,7 @@
             allItems: null,
             selectedItems: null,
             search: config.search ?? "",
+            selected_items_ids: config.selected_items_ids ?? "",
             searchPlaceholder: config.searchPlaceholder ?? "{{ $title }}",
             expanded: config.expanded ?? false,
             emptyText: config.emptyText ?? "No items found...",
@@ -137,8 +139,9 @@
             handleItemClick(item) {
                 // 1) Add the item
                 this.selectedItems.push(item);
+
                 data = this.selectedItems.map(a => a['id'])
-                @this.set('{{ $model }}', data);
+                this.selected_items_ids = data;
                 this.search = "";
                 this.$refs.searchInput.focus();
             },
@@ -163,7 +166,7 @@
                 if (!this.filteredItems[this.activeIndex]) return;
                 this.selectedItems.push(this.filteredItems[this.activeIndex]);
                 data = this.selectedItems.map(a => a['id'])
-                @this.set('{{ $model }}', data);
+                this.selected_items_ids = data;
                 this.search = "";
             },
 
@@ -185,7 +188,7 @@
                 // otherwise @focusout on the root element will not be triggered
                 if (!this.selectedItems.length) this.$refs.searchInput.focus();
                 data = this.selectedItems.map(a => a['id'])
-                @this.set('{{ $model }}', data);
+                this.selected_items_ids = data;
             },
 
             shortenedName(name, maxChars) {

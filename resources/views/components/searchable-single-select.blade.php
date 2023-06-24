@@ -5,10 +5,12 @@
     <div x-data="select({
         items: {{ @json_encode($list_items) }},
         size: 6,
+        'selected_item_id': @entangle($model),
     })" x-init="onInit" class="relative" @click.away="expanded = false">
         <!-- Start Item Tags And Input Field -->
         <div
             class="flex items-center justify-between px-1 border rounded-md relative pr-8 bg-white dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700">
+            <input type="hidden" x-model="selected_item_id">
             <div @click="expanded = !expanded" class="flex flex-col justify-center items-center h-10 w-full">
 
                 <button type="button" x-text="title"
@@ -55,116 +57,116 @@
 </div>
 
 @push('scripts')
-<script>
-    function select(config) {
-        return {
-            items: config.items ?? [],
-            allItems: null,
-            selectedItems: null,
-            title: config.title ?? '{{ $title }}',
-            search: config.search ?? "",
-            searchPlaceholder: config.searchPlaceholder ?? '{{ $title }}',
-            expanded: config.expanded ?? false,
-            allowDuplicates: config.allowDuplicates ?? true,
-            size: config.size ?? 4,
-            itemHeight: config.itemHeight ?? 40,
-            maxItemChars: config.maxItemChars ?? 50,
-            maxTagChars: config.maxTagChars ?? 25,
-            activeIndex: -1,
-            onInit() {
-                // Set the allItems array since we want to filter later on and keep the original (items) array as reference
-                this.allItems = [...this.items];
-                this.$watch('expanded', (newValue, oldValue) => {
-                    if (newValue) {
-                        this.$refs.searchInput.focus();
+    <script>
+        function select(config) {
+            return {
+                items: config.items ?? [],
+                allItems: null,
+                selectedItems: null,
+                title: config.title ?? '{{ $title }}',
+                search: config.search ?? "",
+                selected_item_id: config.selected_item_id ?? "",
+                searchPlaceholder: config.searchPlaceholder ?? '{{ $title }}',
+                expanded: config.expanded ?? false,
+                allowDuplicates: config.allowDuplicates ?? true,
+                size: config.size ?? 4,
+                itemHeight: config.itemHeight ?? 40,
+                maxItemChars: config.maxItemChars ?? 50,
+                maxTagChars: config.maxTagChars ?? 25,
+                activeIndex: -1,
+                onInit() {
+                    // Set the allItems array since we want to filter later on and keep the original (items) array as reference
+                    this.allItems = [...this.items];
+                    this.$watch('expanded', (newValue, oldValue) => {
+                        if (newValue) {
+                            this.$refs.searchInput.focus();
+                        }
+                    })
+
+                    // Scroll to active element whenever activeIndex changes (if expanded is true and we have a value)
+                    this.$watch("activeIndex", (newValue, oldValue) => {
+                        if (
+                            this.activeIndex == -1 ||
+                            !this.filteredItems[this.activeIndex] ||
+                            !this.expanded
+                        )
+                            return;
+                        this.scrollToActiveElement();
+                    });
+
+                    // Check whether there are selected values or not and set them
+                    this.selectedItems = this.items ?
+                        this.items.filter((item) => item.selected) : [];
+                },
+
+                reset() {
+                    this.expanded = false;
+                    this.activeIndex = -1;
+                },
+
+                handleItemClick(item) {
+                    this.title = item.name;
+                    this.selected_item_id = item.id;
+                    // @this.set('{{ $model }}', item.id);
+                    this.reset();
+                },
+
+                selectNextItem() {
+                    if (!this.filteredItems.length) return;
+                    // Array count starts at 0, so we abstract 1
+                    if (this.filteredItems.length - 1 == this.activeIndex) {
+                        return (this.activeIndex = 0);
                     }
-                })
+                    this.activeIndex++;
+                },
 
-                // Scroll to active element whenever activeIndex changes (if expanded is true and we have a value)
-                this.$watch("activeIndex", (newValue, oldValue) => {
-                    if (
-                        this.activeIndex == -1 ||
-                        !this.filteredItems[this.activeIndex] ||
-                        !this.expanded
-                    )
-                        return;
-                    this.scrollToActiveElement();
-                });
+                selectPrevItem() {
+                    if (!this.filteredItems.length) return;
+                    if (this.activeIndex == 0 || this.activeIndex == -1)
+                        return (this.activeIndex = this.filteredItems.length - 1);
+                    this.activeIndex--;
+                },
 
-                // Check whether there are selected values or not and set them
-                this.selectedItems = this.items ?
-                    this.items.filter((item) => item.selected) : [];
-            },
+                addActiveItem() {
+                    if (!this.filteredItems[this.activeIndex]) return;
+                    item = this.filteredItems[this.activeIndex];
+                    this.selected_item_id = item.id;
+                    this.title = item.name;
+                    // @this.set('{{ $model }}', item.id);
+                    this.reset();
+                },
 
-            reset() {
-                this.search = "";
-                this.expanded = false;
-                this.activeIndex = -1;
-            },
+                scrollToActiveElement() {
+                    // Remove the first two child elements since they are <template> tags
+                    const availableListElements = [...this.$refs.listBox.children].slice(
+                        2,
+                        -1
+                    );
+                    // Scroll to active <li> element
+                    availableListElements[this.activeIndex].scrollIntoView({
+                        block: "end",
+                    });
+                },
 
-            handleItemClick(item) {
-                this.title = item.name;
-                @this.set('{{ $model }}', item.id);
-                this.reset();
-            },
+                shortenedName(name, maxChars) {
+                    return !maxChars || name.length <= maxChars ?
+                        name :
+                        `${name.substr(0, maxChars)}...`;
+                },
 
-            selectNextItem() {
-                if (!this.filteredItems.length) return;
-                // Array count starts at 0, so we abstract 1
-                if (this.filteredItems.length - 1 == this.activeIndex) {
-                    return (this.activeIndex = 0);
-                }
-                this.activeIndex++;
-            },
+                get filteredItems() {
+                    return this.allItems.filter((item) =>
+                        item.name.toLowerCase().includes(this.search?.toLowerCase())
+                    );
+                },
 
-            selectPrevItem() {
-                if (!this.filteredItems.length) return;
-                if (this.activeIndex == 0 || this.activeIndex == -1)
-                    return (this.activeIndex = this.filteredItems.length - 1);
-                this.activeIndex--;
-            },
-
-            addActiveItem() {
-                if (!this.filteredItems[this.activeIndex]) return;
-                item = this.filteredItems[this.activeIndex];
-                this.title = item.name;
-                @this.set('{{ $model }}', item.id);
-                this.reset();
-            },
-
-            scrollToActiveElement() {
-                // Remove the first two child elements since they are <template> tags
-                const availableListElements = [...this.$refs.listBox.children].slice(
-                    2,
-                    -1
-                );
-                // Scroll to active <li> element
-                availableListElements[this.activeIndex].scrollIntoView({
-                    block: "end",
-                });
-            },
-
-            shortenedName(name, maxChars) {
-                return !maxChars || name.length <= maxChars ?
-                    name :
-                    `${name.substr(0, maxChars)}...`;
-            },
-
-            get filteredItems() {
-                return this.allItems.filter((item) =>
-                    item.name.toLowerCase().includes(this.search?.toLowerCase())
-                );
-            },
-
-            get listBoxStyle() {
-                // We add 2 since there is border that takes space
-                return {
-                    maxHeight: `${this.size * this.itemHeight + 2}px`,
-                };
-            },
-        };
-    }
-</script>
-    
+                get listBoxStyle() {
+                    // We add 2 since there is border that takes space
+                    return {
+                        maxHeight: `${this.size * this.itemHeight + 2}px`,
+                    };
+                },
+            };
+        }
+    </script>
 @endpush
-
